@@ -1,33 +1,98 @@
 ScreenManager:
     LoginWindow:
     MenuWindow:
+    Registration:
 
 <LoginWindow>:
     name: "login"
-    GridLayout:
-        cols:1
+    BoxLayout:
+        orientation: "vertical"
         Label:
             text: "Username"
         TextInput:
             id: username
             multiline: False
-            size_hint: None,None
-            width: "300dp"
-            height: "100dp"
+            size_hint: 0.5, 0.3
+            pos_hint: {"center_x": 0.5}
         Label:
             text: "Password"
         TextInput:
             id: password
             multiline: False
             password: True
+            size_hint: 0.5, 0.3
+            pos_hint: {"center_x": 0.5}
         Button:
             text: "Submit"
             on_release: root.login()
         Label:
-            id: error
-            color: 1, 0, 0, 1
+            text: "Don't have an account? Register here"
+        Button:
+            id: register
+            text: "Register here"
+            on_release: root.registration_form()
+
 <MenuWindow>:
     name: "menu"
-    Button:
-        text: "lol"
+    BoxLayout:
+        orientation: "vertical"
+        Button:
+            id: profile
+            text: "Profile"
+            size_hint: 0.5, 0.2
+            pos_hint: {"center_x": 0.5}
+            # dodac show profile info
+        Button:
+            id: tasks
+            text: "Tasks"
+            size_hint: 0.5, 0.2
+            pos_hint: {"center_x": 0.5}
+            # dodac show tasks
+        Button:
+            id: preferences
+            text: "Preferences"
+            size_hint: 0.5, 0.2
+            pos_hint: {"center_x": 0.5}
+            # dodac show preferences
+        Button:
+            id: options
+            text: "Options"
+            size_hint: 0.5, 0.2
+            pos_hint: {"center_x": 0.5}
+            # dodac show options
+
+<Registration>:
+    name: "registration"
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            text: "nickname"
+        TextInput:
+            id: nickname
+            multiline: False
+        Label:
+            text: "password"
+        TextInput:
+            id: passw
+            multiline: False
+            password: True
+        Label:
+            text: "name"
+        TextInput:
+            id: name
+            multiline: False
+        Label:
+            text: "surname"
+        TextInput:
+            id: surname
+            multiline: False
+        Label:
+            text: "University"
+        TextInput:
+            id: university
+            multiline: False
+        Button:
+            text: "confirm registration"
+            on_release: root.register()
+
 
