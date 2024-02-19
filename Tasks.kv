@@ -1,0 +1,33 @@
+ScreenManager:
+    LoginWindow:
+    MenuWindow:
+
+<LoginWindow>:
+    name: "login"
+    GridLayout:
+        cols:1
+        Label:
+            text: "Username"
+        TextInput:
+            id: username
+            multiline: False
+            size_hint: None,None
+            width: "300dp"
+            height: "100dp"
+        Label:
+            text: "Password"
+        TextInput:
+            id: password
+            multiline: False
+            password: True
+        Button:
+            text: "Submit"
+            on_release: root.login()
+        Label:
+            id: error
+            color: 1, 0, 0, 1
+<MenuWindow>:
+    name: "menu"
+    Button:
+        text: "lol"
+
