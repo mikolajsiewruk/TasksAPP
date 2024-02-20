@@ -124,7 +124,34 @@ ScreenManager:
                 id: gradepercentage
                 multiline: False
             Label:
-
+                text: "Difficulty"
+            TextInput:
+                id: difficulty
+                multiline: False
+            Label:
+                text: "Time Consumption"
+            TextInput:
+                id: time_consumption
+                multiline: False
+            Label:
+                text: "Likability"
+            TextInput:
+                id: likability
+                multiline: False
+            Label:
+                text: "Importance"
+            TextInput:
+                id: importance
+                multiline: False
+            Label:
+                text: "Suddenness"
+            TextInput:
+                id: sudenness
+                multiline: False
+        Button:
+            id: submitpref
+            text: "Submit"
+            on_release: root.setpreferences()
 
 
 
