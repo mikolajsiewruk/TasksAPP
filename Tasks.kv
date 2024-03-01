@@ -31,7 +31,7 @@ MDGridLayout:
 
                     MDFloatingActionButton:
                         icon:"plus"
-                        on_release: app.update_prefs()
+                        on_release: app.show_tasks()
 
             DataTableScreen:
                 name: "data_table"
@@ -174,3 +174,9 @@ MDGridLayout:
     CheckboxLeftWidget:
         id: check
         group: "check"
+<ListItemWithCheckbox>:
+
+    IconLeftWidget:
+        icon: root.icon
+
+    RightCheckbox:

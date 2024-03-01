@@ -8,12 +8,12 @@ from kivy.metrics import dp
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.pickers import MDDatePicker
-
+from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.list import OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem
+from kivymd.uix.list import OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
 from kivymd.uix.slider import MDSlider
 from kivymd.uix.button import MDFloatingActionButton,MDTextButton
 from kivymd.uix.textfield import MDTextField
@@ -22,7 +22,7 @@ from kivymd.uix.datatables import MDDataTable
 from datetime import datetime
 from kivy.properties import ListProperty
 from database import Database
-class Test(MDApp):
+class Tasks(MDApp):
     task_list_dialog = None
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
@@ -481,7 +481,21 @@ class ItemConfirm(OneLineAvatarIconListItem):
         for check in check_list:
             if check != instance_check:
                 check.active = False
+class AllTaskView(MDScreen):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.db=Database()
+        self.app=MDApp.get_running_app()
+        self.tasks=self.db.get_tasks()
+        self.list=MDList()
+    def create_task_widgets(self):
+        for task in self.tasks:
+            button=ThreeLineAvatarIconListItem()
 
+class RightCheckbox(IRightBodyTouch, MDCheckbox):
+    pass
+class ListItemWithCheckbox(OneLineAvatarIconListItem):
+    pass
 if __name__ == '__main__':
-    Test().run()
+    Tasks().run()
 

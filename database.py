@@ -23,7 +23,7 @@ class Database():
         self.connection_to_db.commit()
     def get_tasks(self):
         weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
-        user_preferences = f'ECTS*{weights[0]},Due_date * {weights[1]},Grade_percentage * {weights[2]},Difficulty *{weights[3]},Time_consumption * {weights[4]},Likability *{weights[5]},Importance * {weights[6]} '
+        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
         rows = self.cursor.execute(f"SELECT Assignment, Course, Status, Due_date, ECTS*Grade_percentage AS Importance FROM Tasks ORDER BY {user_preferences}").fetchall()
         row_data = [(str(row[0]), row[1], row[2], row[3],) for row in rows]
         return row_data
