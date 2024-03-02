@@ -61,3 +61,13 @@ class Database():
         self.connection_to_db.commit()
     def comm(self,instance):
         print(self.cursor.execute("Select * from Tasks").fetchall())
+    def get_task_list(self):
+        weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
+        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
+        rows = self.cursor.execute(f"SELECT IdT, Assignment, Course, ECTS, Grade_percentage, Due_date, Difficulty, Time_consumption, Likability, ECTS*Grade_percentage AS Importance FROM Tasks WHERE Status = 'To do' ORDER BY {user_preferences}").fetchall()
+        row_data = [(str(row[0]), row[1], row[2], row[3],row[4],row[5],row[6],row[7],row[8],row[9]) for row in rows]
+        return row_data
+    def get_more_info(self,id):
+        sql=f'''SELECT ECTS, Grade_percentage, Difficulty, Time_consumption, Likability FROM Tasks WHERE IdT='{id}'; '''
+        info = self.cursor.execute(sql).fetchone()
+        return info

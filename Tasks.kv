@@ -5,7 +5,6 @@ MDGridLayout:
         elevation: 4
         title: "[b]Task Management For Students[/b]"
         left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
-
     MDNavigationLayout:
         MDScreenManager:
             id: screen_manager
@@ -24,17 +23,17 @@ MDGridLayout:
                         halign: "center"
                     MDList:
                         id: shortest
-
                     MDList:
                         id: important
-
-
                     MDFloatingActionButton:
                         icon:"plus"
                         on_release: app.show_tasks()
-
             DataTableScreen:
                 name: "data_table"
+            AllTaskView:
+                name: "all_tasks"
+            CustomSort:
+                name: "custom_sort"
             PreferencesScreen:
                 name: "preferences"
                 MDBoxLayout:
@@ -53,7 +52,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('ECTS')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -67,7 +65,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('Due_date')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -81,7 +78,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('Grade_percentage')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -95,7 +91,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('Difficulty')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -109,7 +104,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('Time_consumption')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -123,7 +117,6 @@ MDGridLayout:
                                 max: 5
                                 step: 1
                                 value: app.pref_value('Likability')
-
                         BoxLayout:
                             orientation: 'horizontal'
                             size_hint_y: None
@@ -141,42 +134,33 @@ MDGridLayout:
                     MDFlatButton:
                         id: submit
                         text: "Submit changes"
-
         MDNavigationDrawer:
             id: nav_drawer
             radius: (0, 16, 16, 0)
-
             ContentNavigationDrawer:
                 screen_manager: screen_manager
                 nav_drawer: nav_drawer
 <ContentNavigationDrawer>
     MDList:
-
         OneLineListItem:
             text: "Main menu"
             on_press:
                 root.nav_drawer.set_state("close")
                 root.screen_manager.current = "scr 1"
-
         OneLineListItem:
-            text: "All tasks"
+            text: "Preferences Sort"
             on_press:
                 root.nav_drawer.set_state("close")
-                root.screen_manager.current = "data_table"
+                root.screen_manager.current = "all_tasks"
+        OneLineListItem:
+            text: "Custom Sort"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "custom_sort"
         OneLineListItem:
             text: "Preferences"
             on_press:
                 root.nav_drawer.set_state("close")
                 root.screen_manager.current = "preferences"
-<ItemConfirm>
-    on_release: root.set_icon(check)
-
-    CheckboxLeftWidget:
-        id: check
-        group: "check"
 <ListItemWithCheckbox>:
-
-    IconLeftWidget:
-        icon: root.icon
-
     RightCheckbox:
