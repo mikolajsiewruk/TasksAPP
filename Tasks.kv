@@ -28,12 +28,12 @@ MDGridLayout:
                     MDFloatingActionButton:
                         icon:"plus"
                         on_release: app.show_tasks()
-            DataTableScreen:
-                name: "data_table"
             AllTaskView:
                 name: "all_tasks"
             CustomSort:
                 name: "custom_sort"
+            Archive:
+                name: "archive"
             PreferencesScreen:
                 name: "preferences"
                 MDBoxLayout:
@@ -157,6 +157,11 @@ MDGridLayout:
             on_press:
                 root.nav_drawer.set_state("close")
                 root.screen_manager.current = "custom_sort"
+        OneLineListItem:
+            text: "Archive"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "archive"
         OneLineListItem:
             text: "Preferences"
             on_press:

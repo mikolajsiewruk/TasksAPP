@@ -18,15 +18,8 @@ class Database():
             self.connection_to_db.commit()
     def add_tasks(self,assignment,duedate,course=None,ects=None,gradeperc=None,diff=None,time=None,like=None):
         sql=f"INSERT INTO Tasks(Assignment,Course,ECTS,Due_date,Grade_percentage,Difficulty,Time_consumption,Likability) VALUES('{assignment}','{course}','{ects}','{duedate}','{gradeperc}','{diff}','{time}','{like}');"
-        parameters=(assignment,course,ects,duedate,gradeperc,diff,time,like)
         self.cursor.execute(sql)
         self.connection_to_db.commit()
-    def get_tasks(self):
-        weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
-        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
-        rows = self.cursor.execute(f"SELECT Assignment, Course, Status, Due_date, ECTS*Grade_percentage AS Importance FROM Tasks ORDER BY {user_preferences}").fetchall()
-        row_data = [(str(row[0]), row[1], row[2], row[3],) for row in rows]
-        return row_data
     def get_5shortest(self):
         sql="SELECT Assignment,Course,Due_date,IdT FROM Tasks WHERE status='To do' ORDER BY Due_date  LIMIT 5"
         results=self.cursor.execute(sql).fetchall()
@@ -59,13 +52,17 @@ class Database():
         sql=f'''UPDATE Preferences SET ECTS='{ects}',Due_date='{duedate}', Grade_percentage='{gradeperc}',Difficulty='{difficulty}', Time_consumption='{time}', Likability='{like}',Importance='{importance}'; '''
         self.cursor.execute(sql)
         self.connection_to_db.commit()
-    def comm(self,instance):
-        print(self.cursor.execute("Select * from Tasks").fetchall())
     def get_task_list(self):
         weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
         user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
         rows = self.cursor.execute(f"SELECT IdT, Assignment, Course, ECTS, Grade_percentage, Due_date, Difficulty, Time_consumption, Likability, ECTS*Grade_percentage AS Importance FROM Tasks WHERE Status = 'To do' ORDER BY {user_preferences}").fetchall()
         row_data = [(str(row[0]), row[1], row[2], row[3],row[4],row[5],row[6],row[7],row[8],row[9]) for row in rows]
+        return row_data
+    def get_archive(self):
+        weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
+        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
+        rows = self.cursor.execute(f"SELECT IdT, Assignment, Course, ECTS, Grade_percentage, Due_date, Difficulty, Time_consumption, Likability, ECTS*Grade_percentage AS Importance FROM Tasks WHERE Status = 'Done' ORDER BY {user_preferences}").fetchall()
+        row_data = [(str(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]) for row in rows]
         return row_data
     def get_more_info(self,id):
         sql=f'''SELECT ECTS, Grade_percentage, Difficulty, Time_consumption, Likability FROM Tasks WHERE IdT='{id}'; '''
