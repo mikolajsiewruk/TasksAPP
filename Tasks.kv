@@ -169,3 +169,5 @@ MDGridLayout:
                 root.screen_manager.current = "preferences"
 <ListItemWithCheckbox>:
     RightCheckbox:
+        id: check
+        on_active: app.on_checkbox_active(*args)

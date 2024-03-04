@@ -26,6 +26,7 @@ class Tasks(MDApp):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
+        self.active_tasks=set()
     def build(self):
         self.theme_cls.primary_palette = "Blue"
     def on_start(self):
@@ -34,8 +35,10 @@ class Tasks(MDApp):
         self.task_list_dialog=MDDialog(title="Add Assignment",type="custom",content_cls=AddingDialog(self.refresh_tasks_in_menu))
         self.task_list_dialog.open()
     def refresh_tasks_in_menu(self):
+        self.active_tasks.clear()
         self.root.ids.shortest.clear_widgets()
         self.root.ids.important.clear_widgets()
+        self.refresh_other_screens()
         shortest = self.db.get_5shortest()
         for task in shortest:
             self.add_task_to_list(task, self.root.ids.shortest)
@@ -46,7 +49,7 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(icon="menu"),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2])
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),icon="menu",on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2])
         b.bind(on_release=self.print_id)
         target_list.add_widget(b)
     def print_id(self,instance):
@@ -54,15 +57,41 @@ class Tasks(MDApp):
         attributes=self.db.get_attributes(itemid)
         self.adding_dialog=MDDialog(title="Edit Assignment",type="custom",content_cls=UpdateDialog(str(attributes[0]),str(attributes[1]),str(attributes[2]),str(attributes[3]),str(attributes[5]),str(attributes[4]),str(attributes[6]),str(attributes[7]),str(attributes[8]),str(attributes[9]),self.refresh_tasks_in_menu))
         self.adding_dialog.open()
-    def show_data_table(self):
-        self.root.current = "data_table"
+    def all_tasks(self):
+        return AllTaskView()
     def refresh_other_screens(self):
         screen_manager = self.root.ids.screen_manager
         data_table_screen = screen_manager.get_screen("custom_sort")
+        all_task_screen=screen_manager.get_screen("all_tasks")
         preferences_screen = screen_manager.get_screen("archive")
         data_table_screen.create_screen()
+        all_task_screen.create_task_widgets()
     def pref_value(self,column):
         return self.db.get_preference_value(column)
+    def more_info_dialog(self,instance):
+        info=self.db.get_more_info(instance.id)
+        dialog=MDDialog(title="More info",type="custom",content_cls=MoreInfoDialog(info[0],info[1],info[2],info[3],info[4]))
+        dialog.open()
+    def on_checkbox_active(self, checkbox, value):
+        checkbox.id=checkbox.parent.parent.id
+        if value:
+            self.active_tasks.add(checkbox.parent.parent.id)
+            print(self.active_tasks)
+            for items in self.root.ids.important.children:
+                if items.id==checkbox.id:
+                    items.ids.check.active=True
+            for items in self.root.ids.shortest.children:
+                if items.id==checkbox.id:
+                    items.ids.check.active=True
+        else:
+            self.active_tasks.discard(checkbox.parent.parent.id)
+            print(self.active_tasks)
+            for items in self.root.ids.important.children:
+                if items.id==checkbox.id:
+                    items.ids.check.active=False
+            for items in self.root.ids.shortest.children:
+                if items.id==checkbox.id:
+                    items.ids.check.active=False
 class UpdateDialog(MDBoxLayout):
     def __init__(self,id,assignment,course,ects,grade,due,diff,time,likable,status,refresh_callback, **kwargs):
         super().__init__(**kwargs)
@@ -214,11 +243,15 @@ class AllTaskView(MDScreen):
         super().__init__(**kwargs)
         self.db=Database()
         self.app=MDApp.get_running_app()
-        self.tasks=self.db.get_task_list()
-        self.list=MDList()
+        self.list = MDList()
         self.scroll = MDScrollView()
         self.create_task_widgets()
     def create_task_widgets(self):
+        self.scroll.clear_widgets()
+        self.list.clear_widgets()
+        self.clear_widgets()
+        self.tasks = self.db.get_task_list()
+        self.app.active_tasks.clear()
         for task in self.tasks:
             button=ListItemWithCheckbox(IconLeftWidget(id=task[0],icon="menu",on_release=self.more_info_dialog),id=task[0],text=task[1],secondary_text=task[2],tertiary_text=task[5])
             button.bind(on_release=self.app.print_id)
@@ -248,7 +281,96 @@ class MoreInfoDialog(MDBoxLayout):
         for item in items:
             self.list.add_widget(item)
         self.add_widget(self.list)
-class CustomSort(MDScreen): #DOKONCZY TABELE DODAC  GUZIKI USUWANIA/SET DONE BAZUJACE NA CHECKBOXIE
+class BaseScreen(MDScreen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.app = MDApp.get_running_app()
+        self.db = Database()
+        self.scroll = MDScrollView()
+        self.checkbox_state = False
+        self.create_screen()
+    def create_screen(self):
+        self.clear_widgets()
+        self.table_get_rows = self.get_table_data()
+        self.create_table()
+        self.add_widget(self.scroll)
+    def create_table(self):
+        self.scroll.clear_widgets()
+        self.data_table = MDDataTable(
+            use_pagination=True,
+            check=True,
+            column_data=[
+                ("ID", dp(20)),
+                ("Assignment", dp(50), self.sort_on_assignment),
+                ("Course", dp(40), self.sort_on_course),
+                ("ECTS", dp(15), self.sort_on_ects),
+                ("%", dp(15), self.sort_on_perc),
+                ("Due Date", dp(20), self.sort_on_date),
+                ("D", dp(20), self.sort_on_difficulty),
+                ("T", dp(20), self.sort_on_time),
+                ("L", dp(20), self.sort_on_like),
+                ("I", dp(20), self.sort_on_importance)
+            ],
+            row_data=self.table_get_rows,
+            elevation=2,
+            sorted_on="Course",
+            rows_num=5)
+        self.data_table.bind(on_row_press=self.on_row_press)
+        self.data_table.bind(on_check_press=self.on_check_press)
+        self.scroll.add_widget(self.data_table)
+    def on_row_press(self, table, row):
+        if not self.checkbox_state:
+            row_num = int(row.index / len(table.column_data))
+            row_data = table.row_data[row_num]
+            print(row_data)
+            dialog=MDDialog(title="Update task",type="custom",content_cls=UpdateDialog(row_data[0],row_data[1],row_data[2],str(row_data[3]),str(row_data[4]),row_data[5],str(row_data[6]),str(row_data[7]),str(row_data[8]),self.get_dialog_status(),self.create_table))
+            dialog.open()
+        self.checkbox_state=False
+    def on_check_press(self, instance_table, current_row):
+        self.checkbox_state=True
+        print(instance_table, current_row)
+    def sort_on_assignment(self, data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][1]))
+        return indexes, sorted_data
+    def sort_on_course(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][2]))
+        return indexes, sorted_data
+    def sort_on_ects(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][3]))
+        return indexes, sorted_data
+    def sort_on_perc(self, data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: float(item[-1][4])))
+        return indexes, sorted_data
+    def sort_on_date(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][5]))
+        return indexes, sorted_data
+    def sort_on_difficulty(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][6]))
+        return indexes, sorted_data
+    def sort_on_time(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][7]))
+        return indexes, sorted_data
+    def sort_on_like(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][8]))
+        return indexes, sorted_data
+    def sort_on_importance(self,data):
+        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][9]))
+        return indexes, sorted_data
+    def get_table_data(self):
+        raise NotImplementedError("Subclasses must implement get_table_data method")
+    def get_dialog_status(self):
+        raise NotImplementedError("Subclasses must implement get_dialog_status method")
+class CustomSort(BaseScreen):
+    def get_table_data(self):
+        return self.db.get_task_list()
+    def get_dialog_status(self):
+        return 'To do'
+class Archive(BaseScreen):
+    def get_table_data(self):
+        return self.db.get_archive()
+    def get_dialog_status(self):
+        return 'Done'
+'''class CustomSort(MDScreen): #DOKONCZY TABELE DODAC  GUZIKI USUWANIA/SET DONE BAZUJACE NA CHECKBOXIE
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.app = MDApp.get_running_app()
@@ -362,7 +484,7 @@ class Archive(MDScreen):
             row_num = int(row.index / len(table.column_data))
             row_data = table.row_data[row_num]
             print(row_data)
-            dialog = MDDialog(title="Update task", type="custom",content_cls=UpdateDialog(row_data[0], row_data[1], row_data[2], str(row_data[3]),str(row_data[4]), row_data[5], str(row_data[6]),str(row_data[7]), str(row_data[8]), 'To do', self.create_table))
+            dialog = MDDialog(title="Update task", type="custom",content_cls=UpdateDialog(row_data[0], row_data[1], row_data[2], str(row_data[3]),str(row_data[4]), row_data[5], str(row_data[6]),str(row_data[7]), str(row_data[8]), 'Done', self.create_table))
             dialog.open()
         self.checkbox_state = False
     def on_check_press(self, instance_table, current_row):
@@ -394,11 +516,12 @@ class Archive(MDScreen):
         return indexes, sorted_data
     def sort_on_importance(self, data):
         indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][9]))
-        return indexes, sorted_data
+        return indexes, sorted_data'''
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
-    '''Custom list item.'''
+    pass
 class ListItemWithCheckbox(ThreeLineAvatarIconListItem):
-    '''Custom list item.'''
+    def get_checkbox(self):
+        return self.ids.right_checkbox
 if __name__ == '__main__':
     Tasks().run()
 

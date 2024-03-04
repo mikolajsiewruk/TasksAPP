@@ -1,5 +1,4 @@
 import sqlite3
-
 class Database():
     def __init__(self):
         self.connection_to_db=sqlite3.connect("app1.db")
