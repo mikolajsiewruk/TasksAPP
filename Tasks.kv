@@ -28,6 +28,12 @@ MDGridLayout:
                     MDFloatingActionButton:
                         icon:"plus"
                         on_release: app.show_tasks()
+                    MDFlatButton:
+                        text: "Delete selected"
+                        on_release: app.delete_selected()
+                    MDRectangleFlatButton:
+                        text: "Set Done"
+                        on_release: app.set_done()
             AllTaskView:
                 name: "all_tasks"
             CustomSort:

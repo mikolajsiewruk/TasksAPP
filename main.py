@@ -9,7 +9,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton
+from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.gridlayout import MDGridLayout
@@ -63,9 +63,10 @@ class Tasks(MDApp):
         screen_manager = self.root.ids.screen_manager
         data_table_screen = screen_manager.get_screen("custom_sort")
         all_task_screen=screen_manager.get_screen("all_tasks")
-        preferences_screen = screen_manager.get_screen("archive")
+        archive_screen = screen_manager.get_screen("archive")
         data_table_screen.create_screen()
         all_task_screen.create_task_widgets()
+        archive_screen.create_screen()
     def pref_value(self,column):
         return self.db.get_preference_value(column)
     def more_info_dialog(self,instance):
@@ -76,7 +77,6 @@ class Tasks(MDApp):
         checkbox.id=checkbox.parent.parent.id
         if value:
             self.active_tasks.add(checkbox.parent.parent.id)
-            print(self.active_tasks)
             for items in self.root.ids.important.children:
                 if items.id==checkbox.id:
                     items.ids.check.active=True
@@ -85,13 +85,20 @@ class Tasks(MDApp):
                     items.ids.check.active=True
         else:
             self.active_tasks.discard(checkbox.parent.parent.id)
-            print(self.active_tasks)
             for items in self.root.ids.important.children:
                 if items.id==checkbox.id:
                     items.ids.check.active=False
             for items in self.root.ids.shortest.children:
                 if items.id==checkbox.id:
                     items.ids.check.active=False
+    def delete_selected(self):
+        for ids in self.active_tasks:
+            self.db.remove_task(ids)
+        self.refresh_tasks_in_menu()
+    def set_done(self):
+        for ids in self.active_tasks:
+            self.db.mark_as_completed(ids)
+        self.refresh_tasks_in_menu()
 class UpdateDialog(MDBoxLayout):
     def __init__(self,id,assignment,course,ects,grade,due,diff,time,likable,status,refresh_callback, **kwargs):
         super().__init__(**kwargs)
@@ -112,14 +119,14 @@ class UpdateDialog(MDBoxLayout):
         self.status=status
         self.refresh_callback=refresh_callback
         self.assignment_text = MDTextField(hint_text="Assignment", text=self.assignment,required=True,helper_text_mode="on_error",helper_text="Assignment must not be empty")
-        self.course_text = MDTextField(hint_text="Course", helper_text_mode="persistent",text=self.course)
+        self.course_text = MDTextField(hint_text="Course",text=self.course)
         self.ects_text = MDTextField(hint_text="ECTS", text=self.ects)
-        self.grade_perc_text = MDTextField(hint_text="Grade Percentage", text=self.grade_perc)
+        self.grade_perc_text = MDTextField(hint_text="Grade Percentage", text=self.grade_perc,helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
         self.due_date_text = MDTextField(hint_text="Due Date", text=self.due_date,date_format="yyyy/mm/dd",validator="date",required=True,helper_text_mode='on_error',helper_text="Enter a valid date YYYY/MM/DD")
-        self.difficulty_text = MDTextField(hint_text="Difficulty", text=self.difficulty)
-        self.time_consumption_text = MDTextField(hint_text="Time Consumption", text=self.time_consumption)
-        self.likability_text = MDTextField(hint_text="Likability", text=self.likability)
-        self.status_text = MDTextField(hint_text="Status", text=self.status)
+        self.difficulty_text = MDTextField(hint_text="Difficulty", text=self.difficulty,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.time_consumption_text = MDTextField(hint_text="Time Consumption", text=self.time_consumption,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.likability_text = MDTextField(hint_text="Likability", text=self.likability,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.status_text = MDTextField(hint_text="Status", text=self.status,helper_text_mode="persistent",helper_text="To do/Done")
         self.grid=MDBoxLayout(orientation="horizontal",size_hint_y=0.05, size_hint_x=1)
         self.cancel=MDFlatButton(text="Cancel")
         self.cancel.bind(on_release=self.close_dialog)
@@ -133,6 +140,9 @@ class UpdateDialog(MDBoxLayout):
         self.grid.add_widget(self.change_status_button)
         self.grid.add_widget(self.cancel)
         self.grid.add_widget(self.add)
+        self.date_picker_button=MDFloatingActionButton(icon="calendar")
+        self.date_picker_button.bind(on_release=self.show_datepicker)
+        self.grid.add_widget(self.date_picker_button)
         self.layout = MDBoxLayout(orientation="vertical",size_hint_y=0.80)
         self.layout.add_widget(self.assignment_text)
         self.layout.add_widget(self.course_text)
@@ -164,6 +174,13 @@ class UpdateDialog(MDBoxLayout):
                 self.refresh_callback()
             except  sqlite3.IntegrityError:
                 self.show_dialog(title="Error", text='Insufficient data')
+    def show_datepicker(self,instance):
+        date_picker = MDDatePicker()
+        date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
+        date_picker.open()
+    def on_date_picker_save(self, selected_date):
+        selected_date_str = selected_date.strftime("%Y/%m/%d")
+        self.due_date_text.text=selected_date_str
     def confirm_removal(self,instance):
         id=self.id
         self.app.remove_task(id)
@@ -194,11 +211,11 @@ class AddingDialog(MDBoxLayout):
         self.assignment_text = MDTextField(hint_text="Assignment", required=True,helper_text_mode="on_error", helper_text="Assignment must not be empty")
         self.course_text = MDTextField(hint_text="Course")
         self.ects_text = MDTextField(hint_text="ECTS")
-        self.grade_perc_text = MDTextField(hint_text="Grade Percentage")
+        self.grade_perc_text = MDTextField(hint_text="Grade Percentage",helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
         self.due_date_text = MDTextField(hint_text="Due Date", date_format="yyyy/mm/dd",validator="date", required=True, helper_text_mode='on_error',helper_text="Enter a valid date YYYY/MM/DD")
-        self.difficulty_text = MDTextField(hint_text="Difficulty")
-        self.time_consumption_text = MDTextField(hint_text="Time Consumption")
-        self.likability_text = MDTextField(hint_text="Likability")
+        self.difficulty_text = MDTextField(hint_text="Difficulty",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.time_consumption_text = MDTextField(hint_text="Time Consumption",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.likability_text = MDTextField(hint_text="Likability",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
         self.layout = MDBoxLayout(orientation="vertical", size_hint_y=0.80)
         self.layout.add_widget(self.assignment_text)
         self.layout.add_widget(self.course_text)
@@ -213,8 +230,11 @@ class AddingDialog(MDBoxLayout):
         b1.bind(on_release=self.close_dialog)
         b2=MDFlatButton(text="Save")
         b2.bind(on_release=self.confirm)
+        b3=MDFloatingActionButton(icon="calendar")
+        b3.bind(on_release=self.show_datepicker)
         self.grid.add_widget(b1)
         self.grid.add_widget(b2)
+        self.grid.add_widget(b3)
         self.layout.add_widget(self.grid)
         self.add_widget(self.layout)
     def close_dialog(self, instance):
@@ -231,6 +251,13 @@ class AddingDialog(MDBoxLayout):
         self.db.add_tasks(assignment,due_date,course,ects,grade_perc,difficulty,time_consumption,likability)
         self.refresh_callback()
         self.app.refresh_other_screens()
+    def show_datepicker(self,instance):
+        date_picker = MDDatePicker()
+        date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
+        date_picker.open()
+    def on_date_picker_save(self, selected_date):
+        selected_date_str = selected_date.strftime("%Y/%m/%d")  # Format the selected date as a string
+        self.due_date_text.text=selected_date_str
 class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
     nav_drawer = ObjectProperty()
@@ -245,6 +272,8 @@ class AllTaskView(MDScreen):
         self.app=MDApp.get_running_app()
         self.list = MDList()
         self.scroll = MDScrollView()
+        self.layout = MDBoxLayout(orientation="vertical")
+        self.grid=MDGridLayout(cols=3)
         self.create_task_widgets()
     def create_task_widgets(self):
         self.scroll.clear_widgets()
@@ -252,16 +281,42 @@ class AllTaskView(MDScreen):
         self.clear_widgets()
         self.tasks = self.db.get_task_list()
         self.app.active_tasks.clear()
+        self.layout.clear_widgets()
+        self.grid.clear_widgets()
+        self.b1=MDFlatButton(text="Delete selected")
+        self.b1.bind(on_release=self.delete_selected)
+        self.grid.add_widget(self.b1)
+        self.b2=MDFlatButton(text="Set done")
+        self.b2.bind(on_release=self.set_done)
+        self.grid.add_widget(self.b2)
+        self.b3=MDCheckbox(on_release=self.select_all)
+        self.grid.add_widget(self.b3)
         for task in self.tasks:
             button=ListItemWithCheckbox(IconLeftWidget(id=task[0],icon="menu",on_release=self.more_info_dialog),id=task[0],text=task[1],secondary_text=task[2],tertiary_text=task[5])
             button.bind(on_release=self.app.print_id)
             self.list.add_widget(button)
         self.scroll.add_widget(self.list)
-        self.add_widget(self.scroll)
+        self.layout.add_widget(self.grid)
+        self.layout.add_widget(self.scroll)
+        self.add_widget(self.layout)
     def more_info_dialog(self,instance):
         info=self.db.get_more_info(instance.id)
         dialog=MDDialog(title="More info",type="custom",content_cls=MoreInfoDialog(info[0],info[1],info[2],info[3],info[4]))
         dialog.open()
+    def delete_selected(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.remove_task(ids)
+        self.app.refresh_tasks_in_menu()
+    def set_done(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.mark_as_completed(ids)
+        self.app.refresh_tasks_in_menu()
+    def select_all(self,instance):
+        for items in self.list.children:
+            if items.ids.check.active:
+                items.ids.check.active = False
+            else:
+                items.ids.check.active = True
 class MoreInfoDialog(MDBoxLayout):
     def __init__(self,ects,grade_perc,difficulty,time_consumption,likability,**kwargs):
         super().__init__(**kwargs)
@@ -291,11 +346,11 @@ class BaseScreen(MDScreen):
         self.create_screen()
     def create_screen(self):
         self.clear_widgets()
-        self.table_get_rows = self.get_table_data()
         self.create_table()
         self.add_widget(self.scroll)
     def create_table(self):
         self.scroll.clear_widgets()
+        self.table_get_rows = self.get_table_data()
         self.data_table = MDDataTable(
             use_pagination=True,
             check=True,
@@ -314,7 +369,7 @@ class BaseScreen(MDScreen):
             row_data=self.table_get_rows,
             elevation=2,
             sorted_on="Course",
-            rows_num=5)
+            rows_num=10)
         self.data_table.bind(on_row_press=self.on_row_press)
         self.data_table.bind(on_check_press=self.on_check_press)
         self.scroll.add_widget(self.data_table)
@@ -328,7 +383,10 @@ class BaseScreen(MDScreen):
         self.checkbox_state=False
     def on_check_press(self, instance_table, current_row):
         self.checkbox_state=True
-        print(instance_table, current_row)
+        if current_row[0] not in self.app.active_tasks:
+            self.app.active_tasks.add(current_row[0])
+        else:
+            self.app.active_tasks.discard(current_row[0])
     def sort_on_assignment(self, data):
         indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][1]))
         return indexes, sorted_data
@@ -370,153 +428,6 @@ class Archive(BaseScreen):
         return self.db.get_archive()
     def get_dialog_status(self):
         return 'Done'
-'''class CustomSort(MDScreen): #DOKONCZY TABELE DODAC  GUZIKI USUWANIA/SET DONE BAZUJACE NA CHECKBOXIE
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        self.app = MDApp.get_running_app()
-        self.db = Database()
-        self.checkbox_state=False
-        self.create_screen()
-    def create_screen(self):
-        self.clear_widgets()
-        self.scroll = MDScrollView()
-        self.table_get_rows = self.db.get_task_list()
-        self.create_table()
-        self.add_widget(self.scroll)
-    def create_table(self):
-        self.scroll.clear_widgets()
-        self.data_table = MDDataTable(
-            use_pagination=True,
-            check=True,
-            column_data=[
-                ("ID", dp(20)),
-                ("Assignment", dp(50),self.sort_on_assignment),
-                ("Course", dp(40),self.sort_on_course),
-                ("ECTS", dp(15),self.sort_on_ects),
-                ("%", dp(15), self.sort_on_perc),
-                ("Due Date", dp(20),self.sort_on_date),
-                ("D", dp(20),self.sort_on_difficulty),
-                ("T", dp(20),self.sort_on_time),
-                ("L", dp(20),self.sort_on_like),
-                ("I", dp(20),self.sort_on_importance)
-            ],
-            row_data=self.table_get_rows,
-            elevation=2,
-            sorted_on="Course",
-            rows_num=5)
-        self.data_table.bind(on_row_press=self.on_row_press)
-        self.data_table.bind(on_check_press=self.on_check_press)
-        self.scroll.add_widget(self.data_table)
-    def on_row_press(self, table, row):
-        if not self.checkbox_state:
-            row_num = int(row.index / len(table.column_data))
-            row_data = table.row_data[row_num]
-            print(row_data)
-            dialog=MDDialog(title="Update task",type="custom",content_cls=UpdateDialog(row_data[0],row_data[1],row_data[2],str(row_data[3]),str(row_data[4]),row_data[5],str(row_data[6]),str(row_data[7]),str(row_data[8]),'To do',self.create_table))
-            dialog.open()
-        self.checkbox_state=False
-    def on_check_press(self, instance_table, current_row):
-        self.checkbox_state=True
-        print(instance_table, current_row)
-    def sort_on_assignment(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][1]))
-        return indexes, sorted_data
-    def sort_on_course(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][2]))
-        return indexes, sorted_data
-    def sort_on_ects(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][3]))
-        return indexes, sorted_data
-    def sort_on_perc(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: float(item[-1][4])))
-        return indexes, sorted_data
-    def sort_on_date(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][5]))
-        return indexes, sorted_data
-    def sort_on_difficulty(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][6]))
-        return indexes, sorted_data
-    def sort_on_time(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][7]))
-        return indexes, sorted_data
-    def sort_on_like(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][8]))
-        return indexes, sorted_data
-    def sort_on_importance(self,data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][9]))
-        return indexes, sorted_data
-class Archive(MDScreen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.app = MDApp.get_running_app()
-        self.db = Database()
-        self.scroll = MDScrollView()
-        self.checkbox_state = False
-        self.table_get_rows = self.db.get_archive()
-        self.create_table()
-        self.add_widget(self.scroll)
-    def create_table(self):
-        self.scroll.clear_widgets()
-        self.data_table = MDDataTable(
-            use_pagination=True,
-            check=True,
-            column_data=[
-                ("ID", dp(20)),
-                ("Assignment", dp(50), self.sort_on_assignment),
-                ("Course", dp(40), self.sort_on_course),
-                ("ECTS", dp(15), self.sort_on_ects),
-                ("%", dp(15), self.sort_on_perc),
-                ("Due Date", dp(20), self.sort_on_date),
-                ("D", dp(20), self.sort_on_difficulty),
-                ("T", dp(20), self.sort_on_time),
-                ("L", dp(20), self.sort_on_like),
-                ("I", dp(20), self.sort_on_importance)
-            ],
-            row_data=self.table_get_rows,
-            elevation=2,
-            sorted_on="Course",
-            rows_num=5)
-        self.data_table.bind(on_row_press=self.on_row_press)
-        self.data_table.bind(on_check_press=self.on_check_press)
-        self.scroll.add_widget(self.data_table)
-    def on_row_press(self, table, row):
-        if not self.checkbox_state:
-            row_num = int(row.index / len(table.column_data))
-            row_data = table.row_data[row_num]
-            print(row_data)
-            dialog = MDDialog(title="Update task", type="custom",content_cls=UpdateDialog(row_data[0], row_data[1], row_data[2], str(row_data[3]),str(row_data[4]), row_data[5], str(row_data[6]),str(row_data[7]), str(row_data[8]), 'Done', self.create_table))
-            dialog.open()
-        self.checkbox_state = False
-    def on_check_press(self, instance_table, current_row):
-        self.checkbox_state = True
-        print(instance_table, current_row)
-    def sort_on_assignment(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][1]))
-        return indexes, sorted_data
-    def sort_on_course(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][2]))
-        return indexes, sorted_data
-    def sort_on_ects(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][3]))
-        return indexes, sorted_data
-    def sort_on_perc(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: float(item[-1][4])))
-        return indexes, sorted_data
-    def sort_on_date(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][5]))
-        return indexes, sorted_data
-    def sort_on_difficulty(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][6]))
-        return indexes, sorted_data
-    def sort_on_time(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][7]))
-        return indexes, sorted_data
-    def sort_on_like(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][8]))
-        return indexes, sorted_data
-    def sort_on_importance(self, data):
-        indexes, sorted_data = zip(*sorted(enumerate(data), key=lambda item: item[1][9]))
-        return indexes, sorted_data'''
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
     pass
 class ListItemWithCheckbox(ThreeLineAvatarIconListItem):
@@ -524,13 +435,3 @@ class ListItemWithCheckbox(ThreeLineAvatarIconListItem):
         return self.ids.right_checkbox
 if __name__ == '__main__':
     Tasks().run()
-
-# date picker declaration
-'''    def show_date_picker(self,instance):
-        date_picker = MDDatePicker()
-        date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
-        date_picker.open()
-        print(self.city.text)
-    def on_date_picker_save(self, selected_date):
-        selected_date_str = selected_date.strftime("%Y-%m-%d")  # Format the selected date as a string
-        print("Selected date:", selected_date_str)'''
