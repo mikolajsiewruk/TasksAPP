@@ -53,7 +53,7 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=(0.5333333333333333,0.054901960784313725,0.30980392156862746,1),on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=(0.7372549019607844,0,0.29411764705882354,1),secondary_theme_text_color = 'Custom',secondary_text_color=(0.7372549019607844,0,0.29411764705882354,0.75),tertiary_theme_text_color = 'Custom',tertiary_text_color=(0.7372549019607844,0,0.29411764705882354,0.75),bg_color=self.bg)
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=(0.00000, 0.52941, 0.60000,1),on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=(0.00000, 0.52941, 0.60000,1),secondary_theme_text_color = 'Custom',secondary_text_color=(0.00000, 0.52941, 0.60000,0.75),tertiary_theme_text_color = 'Custom',tertiary_text_color=(0.00000, 0.52941, 0.60000,0.75),bg_color=(0.73725, 0.91373, 1.00000,0.1))
         c=b.ids._left_container.children
         a=c[0]
         print(a)
@@ -275,7 +275,14 @@ class PreferencesScreen(MDScreen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
-        self.md_bg_color = (0, 1, 0, 1)
+class CustomSlider(MDSlider):
+    color = ListProperty([0.00000, 0.61961, 0.70196,1])
+    hint_text_color = ListProperty([0.00000, 0.61961, 0.70196,1])
+    thumb_color_active = ListProperty([0.00000, 0.61961, 0.70196,1])
+    thumb_color_inactive = ListProperty([0.00000, 0.61961, 0.70196,1])
+    def __init__(self, **kwargs):
+        super(CustomSlider, self).__init__(**kwargs)
+        self.thumb_size = dp(24)
 class AllTaskView(MDScreen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
