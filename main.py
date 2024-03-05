@@ -13,7 +13,7 @@ from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,M
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.list import OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
+from kivymd.uix.list import BaseListItem,OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
 from kivymd.uix.slider import MDSlider
 from kivymd.uix.button import MDFloatingActionButton,MDTextButton
 from kivymd.uix.textfield import MDTextField
@@ -27,6 +27,10 @@ class Tasks(MDApp):
         super().__init__(**kwargs)
         self.db=Database()
         self.active_tasks=set()
+        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_color":(0.7372549019607844,0,0.29411764705882354,1),"secondary_color":(0.7372549019607844,0,0.29411764705882354,1),"tertiary_color": (1,0.5254901960784314,0.615686274509804,1),"container_color":(1,0.8509803921568627,0.8705882352941177,1)}}
+        self.col=self.colors_dict["Pink"]
+        self.bg=self.col["bg_color"]
+        print(self.bg)
     def build(self):
         self.theme_cls.primary_palette = "Blue"
     def on_start(self):
@@ -49,7 +53,13 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),icon="menu",on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2])
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=(0.5333333333333333,0.054901960784313725,0.30980392156862746,1),on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=(0.7372549019607844,0,0.29411764705882354,1),secondary_theme_text_color = 'Custom',secondary_text_color=(0.7372549019607844,0,0.29411764705882354,0.75),tertiary_theme_text_color = 'Custom',tertiary_text_color=(0.7372549019607844,0,0.29411764705882354,0.75),bg_color=self.bg)
+        c=b.ids._left_container.children
+        a=c[0]
+        print(a)
+        '''a.theme_text_color="Custom"
+        a.icon="menu"
+        a.icon_color=(0,1,0,1)'''
         b.bind(on_release=self.print_id)
         target_list.add_widget(b)
     def print_id(self,instance):
@@ -265,11 +275,13 @@ class PreferencesScreen(MDScreen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
+        self.md_bg_color = (0, 1, 0, 1)
 class AllTaskView(MDScreen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
         self.app=MDApp.get_running_app()
+        self.md_bg_color=(0,1,0,1)
         self.list = MDList()
         self.scroll = MDScrollView()
         self.layout = MDBoxLayout(orientation="vertical")
@@ -430,8 +442,10 @@ class Archive(BaseScreen):
         return 'Done'
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
     pass
-class ListItemWithCheckbox(ThreeLineAvatarIconListItem):
+class ListItemWithCheckbox(ThreeLineAvatarIconListItem,BaseListItem):
     def get_checkbox(self):
         return self.ids.right_checkbox
+class TestItem(ThreeLineAvatarIconListItem,BaseListItem):
+    pass
 if __name__ == '__main__':
     Tasks().run()
