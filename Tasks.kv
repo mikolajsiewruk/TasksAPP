@@ -71,154 +71,156 @@ MDGridLayout:
                 name: "preferences"
 
                 size_hint:(1,1)
-                MDBoxLayout:
-                    orientation: "vertical"
-                    size_hint:(1,1)
-                    padding: dp(10)
-                    MDLabel:
-                        size_hint_y: None
-                        height: dp(48)
-                        text: "Select preferences values"
-                        halign: "center"
-                        font_style: "H6"
-                        color: 0.00000, 0.44314, 0.50196, 1
-                        pos_hint: {"top": 1}
-                    MDList:
-                        id: list
+                MDFloatLayout:
+                    MDBoxLayout:
+                        orientation: "vertical"
                         size_hint:(1,1)
-                        MDBoxLayout:
-                            orientation: 'horizontal'
+                        padding: dp(10)
+                        MDLabel:
                             size_hint_y: None
                             height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "ECTS"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
+                            text: "Select preferences values"
+                            halign: "center"
+                            font_style: "H6"
+                            color: 0.00000, 0.44314, 0.50196, 1
+                            pos_hint: {"top": 1}
+                        MDList:
+                            id: list
+                            size_hint:(1,1)
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "ECTS"
                                     theme_text_color: "Custom"
-                                    icon: "star"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: ECTS
-                                max: 5
-                                step: 1
-                                value: app.pref_value('ECTS')
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        theme_text_color: "Custom"
+                                        icon: "star"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: ECTS
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('ECTS')
 
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Due Date"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "calendar-clock"
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Due Date"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Due_date
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Due_date')
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Grade Percentage"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "percent"
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "calendar-clock"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Due_date
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Due_date')
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Grade Percentage"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Grade_percentage
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Grade_percentage')
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Difficulty"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "fire"
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "percent"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Grade_percentage
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Grade_percentage')
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Difficulty"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Difficulty
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Difficulty')
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Time Consumption"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "timer"
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "fire"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Difficulty
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Difficulty')
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Time Consumption"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Time_consumption
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Time_consumption')
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Likability"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "heart"
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "timer"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Time_consumption
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Time_consumption')
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Likability"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Likability
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Likability')
-                        MDBoxLayout:
-                            orientation: 'horizontal'
-                            size_hint_y: None
-                            height: dp(48)
-                            md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-                            OneLineIconListItem:
-                                text: "Importance"
-                                theme_text_color: "Custom"
-                                text_color: (0.00000, 0.26667, 0.30196,1)
-                                IconLeftWidgetWithoutTouch:
-                                    icon: "exclamation"
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "heart"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Likability
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Likability')
+                            MDBoxLayout:
+                                orientation: 'horizontal'
+                                size_hint_y: None
+                                height: dp(48)
+                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                OneLineIconListItem:
+                                    text: "Importance"
                                     theme_text_color: "Custom"
-                                    icon_color: 0.00000, 0.52941, 0.60000, 1
-                            CustomSlider:
-                                id: Importance
-                                hint:True
-                                max: 5
-                                step: 1
-                                value: app.pref_value('Importance')
-                MDFillRoundFlatButton:
-                    id: submit
-                    text: "Submit changes"
-                    pos_hint_x: {"center_x":0.9}
-                    size_hint_y: 0.1
+                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    IconLeftWidgetWithoutTouch:
+                                        icon: "exclamation"
+                                        theme_text_color: "Custom"
+                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                CustomSlider:
+                                    id: Importance
+                                    hint:True
+                                    max: 5
+                                    step: 1
+                                    value: app.pref_value('Importance')
+                    MDFillRoundFlatButton:
+                        id: submit
+                        text: "Submit changes"
+                        pos_hint_x: {"x":1}
+                        size_hint_y: 0.1
+                        on_release: app.submit_preferences_changes()
         MDNavigationDrawer:
             id: nav_drawer
             radius: (0, 16, 16, 0)

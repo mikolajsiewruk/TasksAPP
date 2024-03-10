@@ -9,7 +9,7 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton
+from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton,MDFillRoundFlatButton
 from kivymd.uix.gridlayout import MDGridLayout
 from kivymd.uix.list import BaseListItem,OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
 from kivymd.uix.slider import MDSlider
@@ -102,6 +102,16 @@ class Tasks(MDApp):
     def show_tasks(self):
         self.task_list_dialog=MDDialog(title="Add Assignment",type="custom",content_cls=AddingDialog(self.refresh_tasks_in_menu))
         self.task_list_dialog.open()
+    def submit_preferences_changes(self):
+        ects=self.root.ids.ECTS.value
+        due_date=self.root.ids.Due_date.value
+        grade_perc=self.root.ids.Grade_percentage.value
+        diff=self.root.ids.Difficulty.value
+        time=self.root.ids.Time_consumption.value
+        like=self.root.ids.Likability.value
+        importance=self.root.ids.Importance.value
+        self.db.update_preferences_values(ects,due_date,grade_perc,diff,time,like,importance)
+        self.refresh_other_screens()
     def refresh_tasks_in_menu(self):
         self.active_tasks.clear()
         self.root.ids.shortest.clear_widgets()
@@ -335,9 +345,7 @@ class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
     nav_drawer = ObjectProperty()
 class PreferencesScreen(MDScreen):
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        self.db=Database()
+    pass
 class CustomSlider(MDSlider):
     color = ListProperty([0.00000, 0.61961, 0.70196,1])
     hint_text_color = ListProperty([0.00000, 0.61961, 0.70196,1])
@@ -430,6 +438,14 @@ class BaseScreen(MDScreen):
         self.clear_widgets()
         self.create_table()
         self.add_widget(self.scroll)
+        self.layout=MDGridLayout(cols=2)
+        self.b1=MDFlatButton(text='Remove selected')
+        self.b1.bind(on_release=self.delete_selected)
+        self.layout.add_widget(self.b1)
+        self.b2=MDFlatButton(text="Done")
+        self.b2.bind(on_release=self.set_done)
+        self.layout.add_widget(self.b2)
+        self.add_widget(self.layout)
     def create_table(self):
         self.scroll.clear_widgets()
         self.table_get_rows = self.get_table_data()
@@ -459,7 +475,6 @@ class BaseScreen(MDScreen):
         if not self.checkbox_state:
             row_num = int(row.index / len(table.column_data))
             row_data = table.row_data[row_num]
-            print(row_data)
             dialog=MDDialog(title="Update task",type="custom",content_cls=UpdateDialog(row_data[0],row_data[1],row_data[2],str(row_data[3]),str(row_data[4]),row_data[5],str(row_data[6]),str(row_data[7]),str(row_data[8]),self.get_dialog_status(),self.create_table))
             dialog.open()
         self.checkbox_state=False
@@ -500,6 +515,14 @@ class BaseScreen(MDScreen):
         raise NotImplementedError("Subclasses must implement get_table_data method")
     def get_dialog_status(self):
         raise NotImplementedError("Subclasses must implement get_dialog_status method")
+    def delete_selected(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.remove_task(ids)
+        self.app.refresh_tasks_in_menu()
+    def set_done(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.mark_as_completed(ids)
+        self.app.refresh_tasks_in_menu()
 class CustomSort(BaseScreen):
     def get_table_data(self):
         return self.db.get_task_list()
