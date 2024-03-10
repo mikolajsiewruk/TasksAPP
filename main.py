@@ -9,24 +9,92 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton
-from kivymd.uix.textfield import MDTextField
-from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton,MDFillRoundFlatButton
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.list import OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
+from kivymd.uix.list import BaseListItem,OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
 from kivymd.uix.slider import MDSlider
 from kivymd.uix.button import MDFloatingActionButton,MDTextButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.datatables import MDDataTable
 from datetime import datetime
 from kivy.properties import ListProperty
-from database import Database
+class Database():
+    def __init__(self):
+        self.connection_to_db=sqlite3.connect("app1.db")
+        self.cursor=self.connection_to_db.cursor()
+        self.create_tables()
+    def create_tables(self):
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Tasks(IdT INTEGER NOT NULL CONSTRAINT Tasks_pk PRIMARY KEY AUTOINCREMENT, Assignment TEXT NOT NULL, Course TEXT, ECTS INTEGER, Due_date TEXT NOT NULL, Grade_percentage REAL, Difficulty INTEGER, Time_consumption INTEGER, Likability INTEGER, Status TEXT default 'To do');''')
+        self.connection_to_db.commit()
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Preferences(ECTS INTEGER default 1,Due_date INTEGER default 1, Grade_percentage INTEGER default 1, Difficulty INTEGER default 1,Time_consumption INTEGER default 1,Likability INTEGER default 1,Importance INTEGER default 1) ''')
+        self.connection_to_db.commit()
+        if not self.cursor.execute("SELECT * FROM Preferences").fetchone():
+            self.cursor.execute("INSERT INTO Preferences(ECTS,Due_date,Grade_percentage,Difficulty,Time_consumption,Likability,Importance) VALUES (1,1,1,1,1,1,1)")
+            self.connection_to_db.commit()
+        if not self.cursor.execute("SELECT * FROM Tasks").fetchall():
+            self.cursor.execute("INSERT INTO Tasks(Assignment,Course,ECTS,Due_date,Grade_percentage,Difficulty,Time_consumption,Likability,Status)VALUES ('Sample task','Sample course',2,'2024/01/01',0.5,1,1,1,'To do')")
+            self.connection_to_db.commit()
+    def add_tasks(self,assignment,duedate,course=None,ects=None,gradeperc=None,diff=None,time=None,like=None):
+        sql=f"INSERT INTO Tasks(Assignment,Course,ECTS,Due_date,Grade_percentage,Difficulty,Time_consumption,Likability) VALUES('{assignment}','{course}','{ects}','{duedate}','{gradeperc}','{diff}','{time}','{like}');"
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
+    def get_5shortest(self):
+        sql="SELECT Assignment,Course,Due_date,IdT FROM Tasks WHERE status='To do' ORDER BY Due_date  LIMIT 5"
+        results=self.cursor.execute(sql).fetchall()
+        return results
+    def get_5important(self):
+        sql = "SELECT Assignment,ECTS*Grade_percentage AS Importance,Due_date,IdT FROM Tasks WHERE status='To do' ORDER BY Importance DESC LIMIT 5"
+        results = self.cursor.execute(sql).fetchall()
+        return results
+    def get_attributes(self,id):
+        sql=f'SELECT * FROM TASKS WHERE IdT={id}'
+        return self.cursor.execute(sql).fetchone()
+    def alter_task(self,id,assignment,duedate,course,ects,gradeperc,diff,time,like,status):
+        sql=f'''UPDATE Tasks SET Assignment='{assignment}',Course='{course}', ECTS='{ects}', Grade_percentage='{gradeperc}', Due_date='{duedate}', Difficulty='{diff}', Time_consumption='{time}', Likability='{like}', Status='{status}' WHERE IdT='{id}';'''
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
+    def remove_task(self,id):
+        sql=f"DELETE FROM Tasks WHERE IdT='{id}';"
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
+    def mark_as_completed(self,id):
+        sql=f"UPDATE Tasks SET Status ='Done' WHERE IdT='{id}'"
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
+    def get_preference_value(self,column):
+        sql=f'''SELECT {column} FROM Preferences'''
+        self.cursor.execute(sql)
+        result=self.cursor.fetchone()
+        return result[0]
+    def update_preferences_values(self,ects,duedate,gradeperc,difficulty,time,like,importance):
+        sql=f'''UPDATE Preferences SET ECTS='{ects}',Due_date='{duedate}', Grade_percentage='{gradeperc}',Difficulty='{difficulty}', Time_consumption='{time}', Likability='{like}',Importance='{importance}'; '''
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
+    def get_task_list(self):
+        weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
+        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
+        rows = self.cursor.execute(f"SELECT IdT, Assignment, Course, ECTS, Grade_percentage, Due_date, Difficulty, Time_consumption, Likability, ECTS*Grade_percentage AS Importance FROM Tasks WHERE Status = 'To do' ORDER BY {user_preferences}").fetchall()
+        row_data = [(str(row[0]), row[1], row[2], row[3],row[4],row[5],row[6],row[7],row[8],row[9]) for row in rows]
+        return row_data
+    def get_archive(self):
+        weights = self.cursor.execute("SELECT * FROM Preferences").fetchone()
+        user_preferences = f'ECTS*{weights[0]} DESC ,Due_date * {weights[1]} DESC,Grade_percentage * {weights[2]} DESC ,Difficulty *{weights[3]} DESC,Time_consumption * {weights[4]} DESC,Likability *{weights[5]} DESC,Importance * {weights[6]} DESC'
+        rows = self.cursor.execute(f"SELECT IdT, Assignment, Course, ECTS, Grade_percentage, Due_date, Difficulty, Time_consumption, Likability, ECTS*Grade_percentage AS Importance FROM Tasks WHERE Status = 'Done' ORDER BY {user_preferences}").fetchall()
+        row_data = [(str(row[0]), row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]) for row in rows]
+        return row_data
+    def get_more_info(self,id):
+        sql=f'''SELECT ECTS, Grade_percentage, Difficulty, Time_consumption, Likability FROM Tasks WHERE IdT='{id}'; '''
+        info = self.cursor.execute(sql).fetchone()
+        return info
 class Tasks(MDApp):
     task_list_dialog = None
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
         self.active_tasks=set()
+        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_color":(0.7372549019607844,0,0.29411764705882354,1),"secondary_color":(0.7372549019607844,0,0.29411764705882354,1),"tertiary_color": (1,0.5254901960784314,0.615686274509804,1),"container_color":(1,0.8509803921568627,0.8705882352941177,1)}}
+        self.col=self.colors_dict["Pink"]
+        self.bg=self.col["bg_color"]
     def build(self):
         self.theme_cls.primary_palette = "Blue"
     def on_start(self):
@@ -34,6 +102,16 @@ class Tasks(MDApp):
     def show_tasks(self):
         self.task_list_dialog=MDDialog(title="Add Assignment",type="custom",content_cls=AddingDialog(self.refresh_tasks_in_menu))
         self.task_list_dialog.open()
+    def submit_preferences_changes(self):
+        ects=self.root.ids.ECTS.value
+        due_date=self.root.ids.Due_date.value
+        grade_perc=self.root.ids.Grade_percentage.value
+        diff=self.root.ids.Difficulty.value
+        time=self.root.ids.Time_consumption.value
+        like=self.root.ids.Likability.value
+        importance=self.root.ids.Importance.value
+        self.db.update_preferences_values(ects,due_date,grade_perc,diff,time,like,importance)
+        self.refresh_other_screens()
     def refresh_tasks_in_menu(self):
         self.active_tasks.clear()
         self.root.ids.shortest.clear_widgets()
@@ -49,7 +127,12 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),icon="menu",on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2])
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=(0.00000, 0.52941, 0.60000,1),on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=(0.00000, 0.52941, 0.60000,1),secondary_theme_text_color = 'Custom',secondary_text_color=(0.00000, 0.52941, 0.60000,0.75),tertiary_theme_text_color = 'Custom',tertiary_text_color=(0.00000, 0.52941, 0.60000,0.75),bg_color=(0.73725, 0.91373, 1.00000,0.1))
+        c=b.ids._left_container.children
+        a=c[0]
+        '''a.theme_text_color="Custom"
+        a.icon="menu"
+        a.icon_color=(0,1,0,1)'''
         b.bind(on_release=self.print_id)
         target_list.add_widget(b)
     def print_id(self,instance):
@@ -262,14 +345,21 @@ class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
     nav_drawer = ObjectProperty()
 class PreferencesScreen(MDScreen):
-    def __init__(self,**kwargs):
-        super().__init__(**kwargs)
-        self.db=Database()
+    pass
+class CustomSlider(MDSlider):
+    color = ListProperty([0.00000, 0.61961, 0.70196,1])
+    hint_text_color = ListProperty([0.00000, 0.61961, 0.70196,1])
+    thumb_color_active = ListProperty([0.00000, 0.61961, 0.70196,1])
+    thumb_color_inactive = ListProperty([0.00000, 0.61961, 0.70196,1])
+    def __init__(self, **kwargs):
+        super(CustomSlider, self).__init__(**kwargs)
+        self.thumb_size = dp(24)
 class AllTaskView(MDScreen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
         self.app=MDApp.get_running_app()
+        self.md_bg_color=(0,1,0,1)
         self.list = MDList()
         self.scroll = MDScrollView()
         self.layout = MDBoxLayout(orientation="vertical")
@@ -348,6 +438,14 @@ class BaseScreen(MDScreen):
         self.clear_widgets()
         self.create_table()
         self.add_widget(self.scroll)
+        self.layout=MDGridLayout(cols=2)
+        self.b1=MDFlatButton(text='Remove selected')
+        self.b1.bind(on_release=self.delete_selected)
+        self.layout.add_widget(self.b1)
+        self.b2=MDFlatButton(text="Done")
+        self.b2.bind(on_release=self.set_done)
+        self.layout.add_widget(self.b2)
+        self.add_widget(self.layout)
     def create_table(self):
         self.scroll.clear_widgets()
         self.table_get_rows = self.get_table_data()
@@ -377,7 +475,6 @@ class BaseScreen(MDScreen):
         if not self.checkbox_state:
             row_num = int(row.index / len(table.column_data))
             row_data = table.row_data[row_num]
-            print(row_data)
             dialog=MDDialog(title="Update task",type="custom",content_cls=UpdateDialog(row_data[0],row_data[1],row_data[2],str(row_data[3]),str(row_data[4]),row_data[5],str(row_data[6]),str(row_data[7]),str(row_data[8]),self.get_dialog_status(),self.create_table))
             dialog.open()
         self.checkbox_state=False
@@ -418,6 +515,14 @@ class BaseScreen(MDScreen):
         raise NotImplementedError("Subclasses must implement get_table_data method")
     def get_dialog_status(self):
         raise NotImplementedError("Subclasses must implement get_dialog_status method")
+    def delete_selected(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.remove_task(ids)
+        self.app.refresh_tasks_in_menu()
+    def set_done(self,instance):
+        for ids in self.app.active_tasks:
+            self.db.mark_as_completed(ids)
+        self.app.refresh_tasks_in_menu()
 class CustomSort(BaseScreen):
     def get_table_data(self):
         return self.db.get_task_list()
@@ -430,8 +535,10 @@ class Archive(BaseScreen):
         return 'Done'
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
     pass
-class ListItemWithCheckbox(ThreeLineAvatarIconListItem):
+class ListItemWithCheckbox(ThreeLineAvatarIconListItem,BaseListItem):
     def get_checkbox(self):
         return self.ids.right_checkbox
+class TestItem(ThreeLineAvatarIconListItem,BaseListItem):
+    pass
 if __name__ == '__main__':
     Tasks().run()
