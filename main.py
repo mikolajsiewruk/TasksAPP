@@ -90,6 +90,10 @@ class Database():
         sql="SELECT Theme FROM Preferences"
         color=self.cursor.execute(sql).fetchone()
         return color[0]
+    def update_theme(self,theme):
+        sql=f"UPDATE Preferences SET Theme='{theme}'"
+        self.cursor.execute(sql)
+        self.connection_to_db.commit()
 class Tasks(MDApp):
     task_list_dialog = None
     def __init__(self,**kwargs):
@@ -105,6 +109,7 @@ class Tasks(MDApp):
         self.secondary_text_color=self.theme["secondary_text_color"]
         self.header_color=self.theme["header_color"]
         self.slider_color=self.theme["slider_color"]
+        self.chosen_theme=self.current_theme
     def build(self):
         self.theme_cls.primary_palette = "Blue"
     def on_start(self):
@@ -193,6 +198,18 @@ class Tasks(MDApp):
     def set_done(self):
         for ids in self.active_tasks:
             self.db.mark_as_completed(ids)
+        self.refresh_tasks_in_menu()
+    def set_theme(self):
+        self.theme = self.colors_dict[self.current_theme]
+        self.bg_color = self.theme["bg_color"]
+        self.primary_text_color = self.theme["primary_text_color"]
+        self.secondary_text_color = self.theme["secondary_text_color"]
+        self.header_color = self.theme["header_color"]
+        self.slider_color = self.theme["slider_color"]
+    def update_theme(self):
+        self.db.update_theme(self.chosen_theme)
+        self.current_theme=self.db.get_theme()
+        self.set_theme()
         self.refresh_tasks_in_menu()
 class UpdateDialog(MDBoxLayout):
     def __init__(self,id,assignment,course,ects,grade,due,diff,time,likable,status,refresh_callback, **kwargs):
@@ -351,7 +368,7 @@ class AddingDialog(MDBoxLayout):
         date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
         date_picker.open()
     def on_date_picker_save(self, selected_date):
-        selected_date_str = selected_date.strftime("%Y/%m/%d")  # Format the selected date as a string
+        selected_date_str = selected_date.strftime("%Y/%m/%d")
         self.due_date_text.text=selected_date_str
 class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
@@ -545,6 +562,9 @@ class Archive(BaseScreen):
         return self.db.get_archive()
     def get_dialog_status(self):
         return 'Done'
+class Settings(MDScreen):
+    pass
+
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
     pass
 class ListItemWithCheckbox(ThreeLineAvatarIconListItem,BaseListItem):
@@ -560,5 +580,17 @@ class CustomInput(MDTextField):
     pass
 class CustomDatePicker(MDDatePicker):
     pass
+class ItemConfirm(OneLineAvatarIconListItem):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.app=MDApp.get_running_app()
+    def set_icon(self, instance_check):
+        self.app.chosen_theme=self.text
+        instance_check.active = True
+        check_list = instance_check.get_widgets(instance_check.group)
+        for check in check_list:
+            if check != instance_check:
+                check.active = False
+
 if __name__ == '__main__':
     Tasks().run()

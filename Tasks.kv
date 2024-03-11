@@ -53,14 +53,32 @@ MDGridLayout:
                         text: "Set Done"
                         on_release: app.set_done()
                         size_hint_x: 1
-
-
             AllTaskView:
                 name: "all_tasks"
             CustomSort:
                 name: "custom_sort"
             Archive:
                 name: "archive"
+            MDScreen:
+                name: "settings"
+                MDBoxLayout:
+                    orientation: "vertical"
+                    Check:
+                        id: xd
+                        active: True
+                        on_active: print(root.id)
+                    Check:
+                        id: lol
+                    ItemConfirm:
+                        id: Pink
+                        text: "Pink"
+                    ItemConfirm:
+                        id: Blue
+                        text: "Blue"
+                    MDFlatButton:
+                        text: "Confirm change"
+                        on_release: app.update_theme()
+
             PreferencesScreen:
                 name: "preferences"
 
@@ -251,6 +269,8 @@ MDGridLayout:
                         pos_hint_x: {"x":1}
                         size_hint_y: 0.1
                         on_release: app.submit_preferences_changes()
+
+
         MDNavigationDrawer:
             id: nav_drawer
             radius: (0, 16, 16, 0)
@@ -284,6 +304,11 @@ MDGridLayout:
             on_press:
                 root.nav_drawer.set_state("close")
                 root.screen_manager.current = "preferences"
+        OneLineListItem:
+            text: "Settings"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "settings"
 <ListItemWithCheckbox>:
     RightCheckbox:
         id: check
@@ -321,3 +346,13 @@ MDGridLayout:
     selector_color: app.primary_text_color
     text_current_color: app.primary_text_color
     text_button_color: app.primary_text_color
+<Check@MDCheckbox>:
+    group: 'group'
+    size_hint: None, None
+    size: dp(48), dp(48)
+<ItemConfirm>
+    on_release: root.set_icon(check)
+
+    CheckboxLeftWidget:
+        id: check
+        group: "check"
