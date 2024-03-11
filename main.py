@@ -86,15 +86,25 @@ class Database():
         sql=f'''SELECT ECTS, Grade_percentage, Difficulty, Time_consumption, Likability FROM Tasks WHERE IdT='{id}'; '''
         info = self.cursor.execute(sql).fetchone()
         return info
+    def get_theme(self):
+        sql="SELECT Theme FROM Preferences"
+        color=self.cursor.execute(sql).fetchone()
+        return color[0]
 class Tasks(MDApp):
     task_list_dialog = None
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.db=Database()
         self.active_tasks=set()
-        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_color":(0.7372549019607844,0,0.29411764705882354,1),"secondary_color":(0.7372549019607844,0,0.29411764705882354,1),"tertiary_color": (1,0.5254901960784314,0.615686274509804,1),"container_color":(1,0.8509803921568627,0.8705882352941177,1)}}
-        self.col=self.colors_dict["Pink"]
-        self.bg=self.col["bg_color"]
+        self.current_theme=self.db.get_theme()
+        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_text_color":(0.7372549019607844,0,0.29411764705882354,1),"secondary_text_color":(0.7372549019607844,0,0.29411764705882354,1),"tertiary_color": (1,0.5254901960784314,0.615686274509804,1),"header_color":(1,0.8509803921568627,0.8705882352941177,1),"slider_color":(1,0.8509803921568627,0.8705882352941177,1)},
+                          "Blue":{"bg_color":(0.73725, 0.91373, 1.00000,0.1),"primary_text_color":(0.00000, 0.52941, 0.60000,1),"secondary_text_color":(0.00000, 0.52941, 0.60000,0.75),"header_color":(0.00000, 0.44314, 0.50196, 1),"slider_color":(0.00000, 0.61961, 0.70196,1)}}
+        self.theme=self.colors_dict[self.current_theme]
+        self.bg_color=self.theme["bg_color"]
+        self.primary_text_color=self.theme["primary_text_color"]
+        self.secondary_text_color=self.theme["secondary_text_color"]
+        self.header_color=self.theme["header_color"]
+        self.slider_color=self.theme["slider_color"]
     def build(self):
         self.theme_cls.primary_palette = "Blue"
     def on_start(self):
@@ -127,7 +137,7 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=(0.00000, 0.52941, 0.60000,1),on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=(0.00000, 0.52941, 0.60000,1),secondary_theme_text_color = 'Custom',secondary_text_color=(0.00000, 0.52941, 0.60000,0.75),tertiary_theme_text_color = 'Custom',tertiary_text_color=(0.00000, 0.52941, 0.60000,0.75),bg_color=(0.73725, 0.91373, 1.00000,0.1))
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=self.primary_text_color,on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=self.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.secondary_text_color,bg_color=self.bg_color)
         c=b.ids._left_container.children
         a=c[0]
         '''a.theme_text_color="Custom"
@@ -347,10 +357,6 @@ class ContentNavigationDrawer(MDScrollView):
 class PreferencesScreen(MDScreen):
     pass
 class CustomSlider(MDSlider):
-    color = ListProperty([0.00000, 0.61961, 0.70196,1])
-    hint_text_color = ListProperty([0.00000, 0.61961, 0.70196,1])
-    thumb_color_active = ListProperty([0.00000, 0.61961, 0.70196,1])
-    thumb_color_inactive = ListProperty([0.00000, 0.61961, 0.70196,1])
     def __init__(self, **kwargs):
         super(CustomSlider, self).__init__(**kwargs)
         self.thumb_size = dp(24)
@@ -359,11 +365,10 @@ class AllTaskView(MDScreen):
         super().__init__(**kwargs)
         self.db=Database()
         self.app=MDApp.get_running_app()
-        self.md_bg_color=(0,1,0,1)
         self.list = MDList()
         self.scroll = MDScrollView()
         self.layout = MDBoxLayout(orientation="vertical")
-        self.grid=MDGridLayout(cols=3)
+        self.grid=MDBoxLayout(orientation="horizontal",size_hint=(1,0.2),pos_hint={"y":1},padding=dp(10),spacing=dp(10))
         self.create_task_widgets()
     def create_task_widgets(self):
         self.scroll.clear_widgets()
@@ -373,16 +378,19 @@ class AllTaskView(MDScreen):
         self.app.active_tasks.clear()
         self.layout.clear_widgets()
         self.grid.clear_widgets()
-        self.b1=MDFlatButton(text="Delete selected")
+        self.b1=CustomButton(text="Delete selected",size_hint_x=1)
+        self.b1.size_hint_x=1
         self.b1.bind(on_release=self.delete_selected)
         self.grid.add_widget(self.b1)
-        self.b2=MDFlatButton(text="Set done")
+        self.b2=CustomButton(text="Set done",size_hint_x=1)
+        self.b2.size_hint_x = 1
         self.b2.bind(on_release=self.set_done)
         self.grid.add_widget(self.b2)
-        self.b3=MDCheckbox(on_release=self.select_all)
+        self.b3=CustomButton(on_release=self.select_all,text="Select all",size_hint_x=1)
+        self.b3.size_hint_x = 1
         self.grid.add_widget(self.b3)
         for task in self.tasks:
-            button=ListItemWithCheckbox(IconLeftWidget(id=task[0],icon="menu",on_release=self.more_info_dialog),id=task[0],text=task[1],secondary_text=task[2],tertiary_text=task[5])
+            button=ListItemWithCheckbox(IconLeftWidget(id=task[0],theme_text_color="Custom",icon="menu",icon_color=self.app.primary_text_color,on_release=self.more_info_dialog),id=task[0],text=task[1],secondary_text=task[2],tertiary_text=task[5],theme_text_color = 'Custom',text_color=self.app.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.app.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.app.secondary_text_color,bg_color=self.app.bg_color)
             button.bind(on_release=self.app.print_id)
             self.list.add_widget(button)
         self.scroll.add_widget(self.list)
@@ -438,11 +446,11 @@ class BaseScreen(MDScreen):
         self.clear_widgets()
         self.create_table()
         self.add_widget(self.scroll)
-        self.layout=MDGridLayout(cols=2)
-        self.b1=MDFlatButton(text='Remove selected')
+        self.layout=MDBoxLayout(orientation="horizontal",size_hint=(1,0.2),padding=dp(10),spacing=dp(10))
+        self.b1=CustomButton(text='Remove selected')
         self.b1.bind(on_release=self.delete_selected)
         self.layout.add_widget(self.b1)
-        self.b2=MDFlatButton(text="Done")
+        self.b2=CustomButton(text="Done")
         self.b2.bind(on_release=self.set_done)
         self.layout.add_widget(self.b2)
         self.add_widget(self.layout)
@@ -539,6 +547,10 @@ class ListItemWithCheckbox(ThreeLineAvatarIconListItem,BaseListItem):
     def get_checkbox(self):
         return self.ids.right_checkbox
 class TestItem(ThreeLineAvatarIconListItem,BaseListItem):
+    pass
+class CustomButton(MDRectangleFlatButton):
+    pass
+class CustomCheckbox(MDCheckbox):
     pass
 if __name__ == '__main__':
     Tasks().run()
