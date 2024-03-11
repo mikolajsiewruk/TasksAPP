@@ -97,7 +97,7 @@ class Tasks(MDApp):
         self.db=Database()
         self.active_tasks=set()
         self.current_theme=self.db.get_theme()
-        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_text_color":(0.7372549019607844,0,0.29411764705882354,1),"secondary_text_color":(0.7372549019607844,0,0.29411764705882354,1),"tertiary_color": (1,0.5254901960784314,0.615686274509804,1),"header_color":(1,0.8509803921568627,0.8705882352941177,1),"slider_color":(1,0.8509803921568627,0.8705882352941177,1)},
+        self.colors_dict={"Pink":{"bg_color":(0.996078431372549,0.9725490196078431,1,1),"primary_text_color":(0.59608, 0.25098, 0.38431,1),"secondary_text_color":(0.59608, 0.25098, 0.38431,0.75),"header_color":(0.45098, 0.18824, 0.28627,1),"slider_color":(0.63529, 0.26667, 0.40784,1)},
                           "Blue":{"bg_color":(0.73725, 0.91373, 1.00000,0.1),"primary_text_color":(0.00000, 0.52941, 0.60000,1),"secondary_text_color":(0.00000, 0.52941, 0.60000,0.75),"header_color":(0.00000, 0.44314, 0.50196, 1),"slider_color":(0.00000, 0.61961, 0.70196,1)}}
         self.theme=self.colors_dict[self.current_theme]
         self.bg_color=self.theme["bg_color"]
@@ -137,7 +137,9 @@ class Tasks(MDApp):
         task_list = list(task)
         if task_list[1] is None:
             task_list[1] = '0'
-        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=self.primary_text_color,on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=self.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.secondary_text_color,bg_color=self.bg_color)
+        b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=self.primary_text_color,on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=self.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.secondary_text_color,bg_color=self.bg_color,divider='Inset',divider_color=(0,1,0,1))
+        b.divider="Full"
+        b.divider_color=self.header_color
         c=b.ids._left_container.children
         a=c[0]
         '''a.theme_text_color="Custom"
@@ -211,15 +213,15 @@ class UpdateDialog(MDBoxLayout):
         self.likability=likable
         self.status=status
         self.refresh_callback=refresh_callback
-        self.assignment_text = MDTextField(hint_text="Assignment", text=self.assignment,required=True,helper_text_mode="on_error",helper_text="Assignment must not be empty")
-        self.course_text = MDTextField(hint_text="Course",text=self.course)
-        self.ects_text = MDTextField(hint_text="ECTS", text=self.ects)
-        self.grade_perc_text = MDTextField(hint_text="Grade Percentage", text=self.grade_perc,helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
-        self.due_date_text = MDTextField(hint_text="Due Date", text=self.due_date,date_format="yyyy/mm/dd",validator="date",required=True,helper_text_mode='on_error',helper_text="Enter a valid date YYYY/MM/DD")
-        self.difficulty_text = MDTextField(hint_text="Difficulty", text=self.difficulty,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
-        self.time_consumption_text = MDTextField(hint_text="Time Consumption", text=self.time_consumption,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
-        self.likability_text = MDTextField(hint_text="Likability", text=self.likability,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
-        self.status_text = MDTextField(hint_text="Status", text=self.status,helper_text_mode="persistent",helper_text="To do/Done")
+        self.assignment_text = CustomInput(hint_text="Assignment", text=self.assignment,required=True,helper_text_mode="persistent",helper_text="Assignment must not be empty")
+        self.course_text = CustomInput(hint_text="Course",text=self.course)
+        self.ects_text = CustomInput(hint_text="ECTS", text=self.ects)
+        self.grade_perc_text = CustomInput(hint_text="Grade Percentage", text=self.grade_perc,helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
+        self.due_date_text = CustomInput(hint_text="Due Date", text=self.due_date,date_format="yyyy/mm/dd",validator="date",required=True,helper_text_mode='persistent',helper_text="Enter a valid date YYYY/MM/DD")
+        self.difficulty_text = CustomInput(hint_text="Difficulty", text=self.difficulty,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.time_consumption_text = CustomInput(hint_text="Time Consumption", text=self.time_consumption,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.likability_text = CustomInput(hint_text="Likability", text=self.likability,helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.status_text = CustomInput(hint_text="Status", text=self.status,helper_text_mode="persistent",helper_text="To do/Done")
         self.grid=MDBoxLayout(orientation="horizontal",size_hint_y=0.05, size_hint_x=1)
         self.cancel=MDFlatButton(text="Cancel")
         self.cancel.bind(on_release=self.close_dialog)
@@ -268,7 +270,7 @@ class UpdateDialog(MDBoxLayout):
             except  sqlite3.IntegrityError:
                 self.show_dialog(title="Error", text='Insufficient data')
     def show_datepicker(self,instance):
-        date_picker = MDDatePicker()
+        date_picker = CustomDatePicker()
         date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
         date_picker.open()
     def on_date_picker_save(self, selected_date):
@@ -301,14 +303,14 @@ class AddingDialog(MDBoxLayout):
         self.size_hint_y = None
         self.height = "700dp"
         self.refresh_callback = refresh_callback
-        self.assignment_text = MDTextField(hint_text="Assignment", required=True,helper_text_mode="on_error", helper_text="Assignment must not be empty")
-        self.course_text = MDTextField(hint_text="Course")
-        self.ects_text = MDTextField(hint_text="ECTS")
-        self.grade_perc_text = MDTextField(hint_text="Grade Percentage",helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
-        self.due_date_text = MDTextField(hint_text="Due Date", date_format="yyyy/mm/dd",validator="date", required=True, helper_text_mode='on_error',helper_text="Enter a valid date YYYY/MM/DD")
-        self.difficulty_text = MDTextField(hint_text="Difficulty",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
-        self.time_consumption_text = MDTextField(hint_text="Time Consumption",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
-        self.likability_text = MDTextField(hint_text="Likability",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.assignment_text = CustomInput(hint_text="Assignment", required=True,helper_text_mode="persistent", helper_text="Assignment must not be empty")
+        self.course_text = CustomInput(hint_text="Course")
+        self.ects_text = CustomInput(hint_text="ECTS")
+        self.grade_perc_text = CustomInput(hint_text="Grade Percentage",helper_text_mode="persistent",helper_text="Fractions from 0 to 1")
+        self.due_date_text = CustomInput(hint_text="Due Date", date_format="yyyy/mm/dd",validator="date", required=True, helper_text_mode='persistent',helper_text="Enter a valid date YYYY/MM/DD")
+        self.difficulty_text = CustomInput(hint_text="Difficulty",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.time_consumption_text = CustomInput(hint_text="Time Consumption",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
+        self.likability_text = CustomInput(hint_text="Likability",helper_text_mode="persistent",helper_text="Numbers from 0 to 10")
         self.layout = MDBoxLayout(orientation="vertical", size_hint_y=0.80)
         self.layout.add_widget(self.assignment_text)
         self.layout.add_widget(self.course_text)
@@ -345,7 +347,7 @@ class AddingDialog(MDBoxLayout):
         self.refresh_callback()
         self.app.refresh_other_screens()
     def show_datepicker(self,instance):
-        date_picker = MDDatePicker()
+        date_picker = CustomDatePicker()
         date_picker.bind(on_save=lambda instance, value, date_range: self.on_date_picker_save(value))
         date_picker.open()
     def on_date_picker_save(self, selected_date):
@@ -392,6 +394,8 @@ class AllTaskView(MDScreen):
         for task in self.tasks:
             button=ListItemWithCheckbox(IconLeftWidget(id=task[0],theme_text_color="Custom",icon="menu",icon_color=self.app.primary_text_color,on_release=self.more_info_dialog),id=task[0],text=task[1],secondary_text=task[2],tertiary_text=task[5],theme_text_color = 'Custom',text_color=self.app.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.app.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.app.secondary_text_color,bg_color=self.app.bg_color)
             button.bind(on_release=self.app.print_id)
+            button.divider = "Full"
+            button.divider_color = self.app.header_color
             self.list.add_widget(button)
         self.scroll.add_widget(self.list)
         self.layout.add_widget(self.grid)
@@ -551,6 +555,10 @@ class TestItem(ThreeLineAvatarIconListItem,BaseListItem):
 class CustomButton(MDRectangleFlatButton):
     pass
 class CustomCheckbox(MDCheckbox):
+    pass
+class CustomInput(MDTextField):
+    pass
+class CustomDatePicker(MDDatePicker):
     pass
 if __name__ == '__main__':
     Tasks().run()
