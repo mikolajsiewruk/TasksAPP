@@ -119,6 +119,7 @@ class Database:
         self.connection_to_db.commit()
 
 
+# noinspection PyMethodMayBeStatic,PyAttributeOutsideInit
 class Tasks(MDApp):
     task_list_dialog = None
 
@@ -274,6 +275,7 @@ class Tasks(MDApp):
         dialog.open()
 
 
+# noinspection PyShadowingNames
 class UpdateDialog(MDBoxLayout):
     def __init__(self, id, assignment, course, ects, grade, due, diff, time, likable, status, refresh_callback,
                  **kwargs):
@@ -382,6 +384,7 @@ class UpdateDialog(MDBoxLayout):
         self.refresh_callback()
         self.parent.parent.parent.dismiss()
 
+    # noinspection PyMethodMayBeStatic
     def show_dialog(self, title, text):
         dialog = MDDialog(title=title, text=text, size_hint=(0.4, 0.2))
         dialog.open()
@@ -393,6 +396,7 @@ class UpdateDialog(MDBoxLayout):
         self.root.current = "data_table"
 
 
+# noinspection PyShadowingNames
 class AddingDialog(MDBoxLayout):
     def __init__(self, refresh_callback, **kwargs):
         super().__init__(**kwargs)
@@ -505,6 +509,7 @@ class CustomSlider(MDSlider):
         self.thumb_size = dp(24)
 
 
+# noinspection PyAttributeOutsideInit
 class AllTaskView(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -604,6 +609,7 @@ class MoreInfoDialog(MDBoxLayout):
         self.add_widget(self.list)
 
 
+# noinspection PyMethodMayBeStatic,PyAttributeOutsideInit
 class BaseScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
