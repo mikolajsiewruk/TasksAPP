@@ -36,19 +36,14 @@ MDGridLayout:
                     pos_hint: {"bottom": 0.0}
                     padding: dp(10)
                     spacing: dp(10)
-
                     CustomButton:
                         text: "Add tasks"
                         on_release: app.show_tasks()
                         size_hint_x: 1
-
-
                     CustomButton:
                         text: "Delete selected"
                         on_release: app.delete_selected()
                         size_hint_x: 1
-
-
                     CustomButton:
                         text: "Set Done"
                         on_release: app.set_done()
@@ -63,12 +58,6 @@ MDGridLayout:
                 name: "settings"
                 MDBoxLayout:
                     orientation: "vertical"
-                    Check:
-                        id: xd
-                        active: True
-                        on_active: print(root.id)
-                    Check:
-                        id: lol
                     ItemConfirm:
                         id: Pink
                         text: "Pink"
@@ -77,11 +66,9 @@ MDGridLayout:
                         text: "Blue"
                     MDFlatButton:
                         text: "Confirm change"
-                        on_release: app.update_theme()
-
+                        on_release: app.open_confirm()
             PreferencesScreen:
                 name: "preferences"
-
                 size_hint:(1,1)
                 MDFloatLayout:
                     MDBoxLayout:
@@ -122,7 +109,6 @@ MDGridLayout:
                                     hint_text_color: app.slider_color
                                     thumb_color_active: app.slider_color
                                     thumb_color_inactive: app.slider_color
-
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
@@ -269,8 +255,6 @@ MDGridLayout:
                         pos_hint_x: {"x":1}
                         size_hint_y: 0.1
                         on_release: app.submit_preferences_changes()
-
-
         MDNavigationDrawer:
             id: nav_drawer
             radius: (0, 16, 16, 0)
@@ -315,7 +299,6 @@ MDGridLayout:
         on_active: app.on_checkbox_active(*args)
         color_inactive: 0.00000, 0.52941, 0.60000,0.75
         color_active: app.primary_text_color
-
 <TestItem>:
     theme_text_color: "Custom"
     text_color: 0,1,0,1
@@ -352,7 +335,6 @@ MDGridLayout:
     size: dp(48), dp(48)
 <ItemConfirm>
     on_release: root.set_icon(check)
-
     CheckboxLeftWidget:
         id: check
         group: "check"

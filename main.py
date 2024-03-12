@@ -1,23 +1,20 @@
 import sqlite3
 from kivymd.app import  MDApp
-from kivy.properties import ObjectProperty,StringProperty
+from kivy.properties import ObjectProperty
 from kivymd.uix.scrollview import MDScrollView
-from kivymd.uix.screenmanager import MDScreenManager
 from kivymd.uix.screen import MDScreen
 from kivy.metrics import dp
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.uix.button import MDFloatingActionButton,MDTextButton,MDFlatButton,MDRectangleFlatButton,MDFillRoundFlatButton
+from kivymd.uix.button import MDFlatButton,MDRectangleFlatButton,MDRaisedButton
 from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.list import BaseListItem,OneLineListItem,ThreeLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,OneLineIconListItem,ThreeLineAvatarIconListItem, IRightBodyTouch
+from kivymd.uix.list import BaseListItem,OneLineListItem,OneLineAvatarIconListItem,MDList,IconLeftWidget,ThreeLineAvatarIconListItem, IRightBodyTouch
 from kivymd.uix.slider import MDSlider
-from kivymd.uix.button import MDFloatingActionButton,MDTextButton
+from kivymd.uix.button import MDFloatingActionButton
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.datatables import MDDataTable
-from datetime import datetime
-from kivy.properties import ListProperty
 class Database():
     def __init__(self):
         self.connection_to_db=sqlite3.connect("app1.db")
@@ -145,11 +142,6 @@ class Tasks(MDApp):
         b = ListItemWithCheckbox(IconLeftWidget(id=str(task_list[3]),theme_text_color="Custom",icon="menu",icon_color=self.primary_text_color,on_release=self.more_info_dialog),id=str(task_list[3]), text=task_list[0], secondary_text=str(task_list[1]),tertiary_text=task_list[2],theme_text_color = 'Custom',text_color=self.primary_text_color,secondary_theme_text_color = 'Custom',secondary_text_color=self.secondary_text_color,tertiary_theme_text_color = 'Custom',tertiary_text_color=self.secondary_text_color,bg_color=self.bg_color,divider='Inset',divider_color=(0,1,0,1))
         b.divider="Full"
         b.divider_color=self.header_color
-        c=b.ids._left_container.children
-        a=c[0]
-        '''a.theme_text_color="Custom"
-        a.icon="menu"
-        a.icon_color=(0,1,0,1)'''
         b.bind(on_release=self.print_id)
         target_list.add_widget(b)
     def print_id(self,instance):
@@ -207,10 +199,13 @@ class Tasks(MDApp):
         self.header_color = self.theme["header_color"]
         self.slider_color = self.theme["slider_color"]
     def update_theme(self):
-        self.db.update_theme(self.chosen_theme)
-        self.current_theme=self.db.get_theme()
-        self.set_theme()
-        self.refresh_tasks_in_menu()
+        if not self.current_theme==self.chosen_theme:
+            self.db.update_theme(self.chosen_theme)
+            self.current_theme=self.db.get_theme()
+            self.set_theme()
+    def open_confirm(self):
+        dialog = MDDialog(title="Close the app to continue", type="custom", content_cls=WarningDialog())
+        dialog.open()
 class UpdateDialog(MDBoxLayout):
     def __init__(self,id,assignment,course,ects,grade,due,diff,time,likable,status,refresh_callback, **kwargs):
         super().__init__(**kwargs)
@@ -370,6 +365,26 @@ class AddingDialog(MDBoxLayout):
     def on_date_picker_save(self, selected_date):
         selected_date_str = selected_date.strftime("%Y/%m/%d")
         self.due_date_text.text=selected_date_str
+class WarningDialog(MDBoxLayout):
+    def __init__(self,**kwargs):
+        super().__init__(**kwargs)
+        self.app=MDApp.get_running_app()
+        self.spacing = "5dp"
+        self.size_hint_y = None
+        self.height = "50dp"
+        layout=MDBoxLayout(orientation="horizontal")
+        b1=MDFlatButton(text="Cancel")
+        b1.bind(on_release=self.close_dialog)
+        b2=MDRaisedButton(text="Close App")
+        b2.bind(on_release=self.close)
+        layout.add_widget(b1)
+        layout.add_widget(b2)
+        self.add_widget(layout)
+    def close(self,instance):
+        self.app.update_theme()
+        self.app.stop()
+    def close_dialog(self, instance):
+        self.parent.parent.parent.dismiss()
 class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
     nav_drawer = ObjectProperty()
@@ -564,7 +579,6 @@ class Archive(BaseScreen):
         return 'Done'
 class Settings(MDScreen):
     pass
-
 class RightCheckbox(IRightBodyTouch, MDCheckbox):
     pass
 class ListItemWithCheckbox(ThreeLineAvatarIconListItem,BaseListItem):
