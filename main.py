@@ -29,7 +29,7 @@ class Database:
             '''CREATE TABLE IF NOT EXISTS Tasks(IdT INTEGER NOT NULL CONSTRAINT Tasks_pk PRIMARY KEY AUTOINCREMENT, Assignment TEXT NOT NULL, Course TEXT, ECTS INTEGER, Due_date TEXT NOT NULL, Grade_percentage REAL, Difficulty INTEGER, Time_consumption INTEGER, Likability INTEGER, Status TEXT default 'To do');''')
         self.connection_to_db.commit()
         self.cursor.execute(
-            '''CREATE TABLE IF NOT EXISTS Preferences(ECTS INTEGER default 1,Due_date INTEGER default 1, Grade_percentage INTEGER default 1, Difficulty INTEGER default 1,Time_consumption INTEGER default 1,Likability INTEGER default 1,Importance INTEGER default 1) ''')
+            '''CREATE TABLE IF NOT EXISTS Preferences(ECTS INTEGER default 1,Due_date INTEGER default 1, Grade_percentage INTEGER default 1, Difficulty INTEGER default 1,Time_consumption INTEGER default 1,Likability INTEGER default 1,Importance INTEGER default 1,Theme TEXT default 'Blue') ''')
         self.connection_to_db.commit()
         if not self.cursor.execute("SELECT * FROM Preferences").fetchone():
             self.cursor.execute(
