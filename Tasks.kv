@@ -5,7 +5,7 @@ MDGridLayout:
         elevation: 4
         title: "[b]Task Management For Students[/b]"
         left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
-        md_bg_color: 0.00000, 0.52941, 0.60000,1
+        md_bg_color: app.secondary_text_color
     MDNavigationLayout:
         MDScreenManager:
             id: screen_manager
@@ -20,56 +20,55 @@ MDGridLayout:
                         text: "5 shortest deadlines \n"
                         halign: "center"
                         font_style: "H6"
-                        color: 0.00000, 0.44314, 0.50196,1
+                        color: app.header_color
                     MDLabel:
                         text: "5 most important \n"
                         halign: "center"
                         font_style: "H6"
-                        color: 0.00000, 0.44314, 0.50196,1
+                        color: app.header_color
                     MDList:
                         id: shortest
                     MDList:
                         id: important
                 MDBoxLayout:
                     orientation: "horizontal"
-                    size_hint: (1, 0.2)  # Make the box layout take 0.2 of the screen
-                    pos_hint: {"bottom": 0.0}  # Align the box layout to the bottom of the screen
-                    padding: dp(10)  # Add padding around the buttons
-                    spacing: dp(10)  # Add spacing between buttons
-
-                    MDRectangleFlatButton:
+                    size_hint: (1, 0.2)
+                    pos_hint: {"bottom": 0.0}
+                    padding: dp(10)
+                    spacing: dp(10)
+                    CustomButton:
                         text: "Add tasks"
                         on_release: app.show_tasks()
-                        size_hint_x: 1  # Take up the entire space along the x-axis
-                        line_color: 0.00000, 0.52941, 0.60000, 1
-                        text_color: 0.00000, 0.52941, 0.60000, 1
-                        md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-
-                    MDRectangleFlatButton:
+                        size_hint_x: 1
+                    CustomButton:
                         text: "Delete selected"
                         on_release: app.delete_selected()
-                        size_hint_x: 1  # Take up the entire space along the x-axis
-                        line_color: 0.00000, 0.52941, 0.60000, 1
-                        text_color: 0.00000, 0.52941, 0.60000, 1
-                        md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-
-                    MDRectangleFlatButton:
+                        size_hint_x: 1
+                    CustomButton:
                         text: "Set Done"
                         on_release: app.set_done()
-                        size_hint_x: 1  # Take up the entire space along the x-axis
-                        line_color: 0.00000, 0.52941, 0.60000, 1
-                        text_color: 0.00000, 0.52941, 0.60000, 1
-                        md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
-
+                        size_hint_x: 1
             AllTaskView:
                 name: "all_tasks"
             CustomSort:
                 name: "custom_sort"
             Archive:
                 name: "archive"
+            MDScreen:
+                name: "settings"
+                MDBoxLayout:
+                    orientation: "vertical"
+                    ItemConfirm:
+                        id: Pink
+                        text: "Pink"
+                    ItemConfirm:
+                        id: Blue
+                        text: "Blue"
+                    MDFlatButton:
+                        text: "Confirm change"
+                        on_release: app.open_confirm()
             PreferencesScreen:
                 name: "preferences"
-
                 size_hint:(1,1)
                 MDFloatLayout:
                     MDBoxLayout:
@@ -82,7 +81,7 @@ MDGridLayout:
                             text: "Select preferences values"
                             halign: "center"
                             font_style: "H6"
-                            color: 0.00000, 0.44314, 0.50196, 1
+                            color: app.header_color
                             pos_hint: {"top": 1}
                         MDList:
                             id: list
@@ -91,131 +90,166 @@ MDGridLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "ECTS"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         theme_text_color: "Custom"
                                         icon: "star"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: ECTS
                                     max: 5
                                     step: 1
                                     value: app.pref_value('ECTS')
-
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "Due Date"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "calendar-clock"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Due_date
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Due_date')
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "Grade Percentage"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "percent"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Grade_percentage
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Grade_percentage')
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "Difficulty"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "fire"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Difficulty
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Difficulty')
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "Time Consumption"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "timer"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Time_consumption
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Time_consumption')
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
                                 OneLineIconListItem:
                                     text: "Likability"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "heart"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Likability
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Likability')
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
                             MDBoxLayout:
                                 orientation: 'horizontal'
                                 size_hint_y: None
                                 height: dp(48)
-                                md_bg_color: 0.73725, 0.91373, 1.00000, 0.1
+                                md_bg_color: app.bg_color
+                                divider_color: app.header_color
                                 OneLineIconListItem:
                                     text: "Importance"
                                     theme_text_color: "Custom"
-                                    text_color: (0.00000, 0.26667, 0.30196,1)
+                                    text_color: app.primary_text_color
+                                    divider_color: app.header_color
                                     IconLeftWidgetWithoutTouch:
                                         icon: "exclamation"
                                         theme_text_color: "Custom"
-                                        icon_color: 0.00000, 0.52941, 0.60000, 1
+                                        icon_color: app.primary_text_color
                                 CustomSlider:
                                     id: Importance
                                     hint:True
                                     max: 5
                                     step: 1
                                     value: app.pref_value('Importance')
-                    MDFillRoundFlatButton:
+                                    color: app.slider_color
+                                    hint_text_color: app.slider_color
+                                    thumb_color_active: app.slider_color
+                                    thumb_color_inactive: app.slider_color
+                    CustomButton:
                         id: submit
                         text: "Submit changes"
                         pos_hint_x: {"x":1}
@@ -254,13 +288,17 @@ MDGridLayout:
             on_press:
                 root.nav_drawer.set_state("close")
                 root.screen_manager.current = "preferences"
+        OneLineListItem:
+            text: "Settings"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "settings"
 <ListItemWithCheckbox>:
     RightCheckbox:
         id: check
         on_active: app.on_checkbox_active(*args)
         color_inactive: 0.00000, 0.52941, 0.60000,0.75
-        color_active: 0.00000, 0.52941, 0.60000,1
-
+        color_active: app.primary_text_color
 <TestItem>:
     theme_text_color: "Custom"
     text_color: 0,1,0,1
@@ -272,3 +310,31 @@ MDGridLayout:
         theme_text_color: "Custom"
         icon: "menu"
         icon_color: (0,1,0,1)
+<CustomButton>:
+    line_color: app.primary_text_color
+    text_color: app.primary_text_color
+    md_bg_color: app.bg_color
+<CustomCheckbox>:
+    color_inactive: 0.00000, 0.52941, 0.60000,0.75
+    selected_color: app.primary_text_color
+<CustomInput>:
+    text_color_focus: app.primary_text_color
+    hint_text_color_focus: app.primary_text_color
+    helper_text_color_normal: 0,0,0,0
+    helper_text_color_focus: app.secondary_text_color
+    line_color_focus: app.primary_text_color
+<CustomDatePicker>:
+    primary_color: app.primary_text_color
+    accent_color: app.bg_color
+    selector_color: app.primary_text_color
+    text_current_color: app.primary_text_color
+    text_button_color: app.primary_text_color
+<Check@MDCheckbox>:
+    group: 'group'
+    size_hint: None, None
+    size: dp(48), dp(48)
+<ItemConfirm>
+    on_release: root.set_icon(check)
+    CheckboxLeftWidget:
+        id: check
+        group: "check"
